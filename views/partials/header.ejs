@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof titulo !== 'undefined' ? titulo : 'P4E | Party 4 Etec' %></title>
+  <script>
+    (function () {
+      try {
+        const temaSalvo = localStorage.getItem('p4e-tema');
+        // Primeira visita (sem preferência salva): iniciar no modo escuro.
+        if (temaSalvo === 'claro') {
+          document.documentElement.setAttribute('data-tema', 'claro');
+        } else {
+          document.documentElement.setAttribute('data-tema', 'escuro');
+        }
+      } catch (erro) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="/css/e-ventus.css">
+</head>
+<body>
+
+<%- include('nav') %>

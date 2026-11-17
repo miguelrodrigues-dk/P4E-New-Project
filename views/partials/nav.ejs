@@ -1,0 +1,74 @@
+<!-- Navegação principal P4E -->
+<header class="cabecalho">
+  <a class="logo-link" href="/eventos" aria-label="P4E - Página inicial">
+    <img class="logo-img" src="/Img/P4E-Logo.png" alt="P4E">
+  </a>
+
+  <nav class="navegacao-p4e" aria-label="Navegação principal">
+    <% if (usuario) { %>
+      <a class="nav-link-p4e" href="/eventos">Início</a>
+      <% if (usuario.role === 'admin') { %>
+        <a class="nav-link-p4e" href="/eventos/admin/usuarios">Usuários</a>
+      <% } %>
+
+      <div class="menu-perfil" id="menuPerfil">
+        <button class="perfil-acionador" id="botaoPerfil" type="button" aria-label="Abrir menu da conta" aria-expanded="false">
+          <% if (usuario.foto) { %>
+            <img class="perfil-avatar" src="<%= usuario.foto %>" alt="Foto de perfil">
+          <% } else { %>
+            <span class="perfil-avatar perfil-iniciais"><%= (usuario.nome || 'U').trim().charAt(0).toUpperCase() %></span>
+          <% } %>
+          <span class="perfil-seta" aria-hidden="true">⌄</span>
+        </button>
+        <div class="perfil-dropdown" id="menuPerfilDropdown" hidden>
+          <div class="perfil-resumo">
+            <% if (usuario.foto) { %>
+              <img class="perfil-avatar perfil-avatar-grande" src="<%= usuario.foto %>" alt="">
+            <% } else { %>
+              <span class="perfil-avatar perfil-avatar-grande perfil-iniciais"><%= (usuario.nome || 'U').trim().charAt(0).toUpperCase() %></span>
+            <% } %>
+            <div>
+              <strong><%= usuario.nome %></strong>
+              <small><%= usuario.email %></small>
+            </div>
+          </div>
+          <a class="perfil-opcao" href="/eventos/configuracoes"><span aria-hidden="true">⚙</span> Configurações</a>
+          <div class="perfil-divisor"></div>
+          <a class="perfil-opcao perfil-sair" href="/eventos/logout"><span aria-hidden="true">↪</span> Sair</a>
+        </div>
+      </div>
+    <% } else { %>
+      <a class="botao botao-login-nav" href="/eventos/login">Login</a>
+      <a class="botao botao-cadastro" href="/eventos/cadastro">Criar Conta</a>
+    <% } %>
+  </nav>
+</header>
+
+<script>
+  (() => {
+    const botao = document.getElementById('botaoPerfil');
+    const menu = document.getElementById('menuPerfilDropdown');
+    if (!botao || !menu) return;
+
+    botao.addEventListener('click', (evento) => {
+      evento.stopPropagation();
+      const vaiAbrir = menu.hidden;
+      menu.hidden = !vaiAbrir;
+      botao.setAttribute('aria-expanded', String(vaiAbrir));
+    });
+
+    document.addEventListener('click', (evento) => {
+      if (!evento.target.closest('#menuPerfil')) {
+        menu.hidden = true;
+        botao.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', (evento) => {
+      if (evento.key === 'Escape') {
+        menu.hidden = true;
+        botao.setAttribute('aria-expanded', 'false');
+      }
+    });
+  })();
+</script>

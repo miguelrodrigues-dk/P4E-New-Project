@@ -1,0 +1,118 @@
+<%- include('../partials/header', { titulo: 'Configurações | P4E' }) %>
+
+<main class="pagina-configuracoes">
+  <div class="configuracoes-cabecalho">
+    <div>
+      <p class="configuracoes-sobretitulo">SUA CONTA</p>
+      <h1>Configurações</h1>
+      <p>Personalize sua experiência no P4E.</p>
+    </div>
+    <a class="config-voltar" href="/eventos">← Voltar aos eventos</a>
+  </div>
+
+  <% if (erro) { %><div class="config-alerta config-erro"><%= erro %></div><% } %>
+  <% if (typeof mensagem !== 'undefined' && mensagem) { %><div class="config-alerta"><%= mensagem %></div><% } %>
+
+  <section class="config-card">
+    <div class="config-card-titulo">
+      <span class="config-icone">◉</span>
+      <div><h2>Perfil</h2><p>Como as outras pessoas veem sua conta.</p></div>
+    </div>
+
+    <form action="/eventos/configuracoes" method="POST" class="form-configuracoes">
+      <div class="perfil-edicao">
+        <% if (conta.foto) { %>
+          <img id="previewFotoPerfil" class="foto-preview" src="<%= conta.foto %>" alt="Foto atual do perfil">
+        <% } else { %>
+          <div id="previewIniciais" class="foto-preview foto-preview-iniciais"><%= (conta.nome || 'U').trim().charAt(0).toUpperCase() %></div>
+        <% } %>
+        <div><strong>Foto de perfil</strong><p>Adicione o endereço de uma imagem para personalizar seu avatar.</p></div>
+      </div>
+
+      <label class="config-label" for="nome">Nome da conta</label>
+      <input class="config-input" type="text" id="nome" name="nome" minlength="2" maxlength="50" value="<%= conta.nome %>" required>
+
+      <label class="config-label" for="foto">Link da foto de perfil</label>
+      <input class="config-input" type="url" id="foto" name="foto" value="<%= conta.foto || '' %>" placeholder="https://exemplo.com/minha-foto.jpg">
+      <small class="config-ajuda">Use o endereço direto de uma imagem. Deixe vazio para remover a foto.</small>
+
+      <div class="config-dados-conta">
+        <div><span>E-mail</span><strong><%= conta.email %></strong></div>
+        <div><span>Tipo de conta</span><strong><%= conta.role === 'admin' ? 'Administrador' : 'Usuário' %></strong></div>
+      </div>
+
+      <button class="config-botao-salvar" type="submit">Salvar alterações</button>
+    </form>
+  </section>
+
+  <section class="config-card config-card-perigo">
+    <div class="config-card-titulo">
+      <span class="config-icone" aria-hidden="true">!</span>
+      <div><h2>Excluir conta</h2><p>Esta ação não poderá ser desfeita.</p></div>
+    </div>
+    <% if (conta.email === 'admin@p4e.com') { %>
+      <p class="config-excluir-aviso">A conta principal de administração é protegida e não pode ser excluída por esta opção.</p>
+    <% } else { %>
+      <p class="config-excluir-aviso">Ao excluir sua conta, você perderá o acesso ao P4E. Seus comentários e respostas publicados também serão removidos.</p>
+      <form action="/eventos/configuracoes/excluir" method="POST" onsubmit="return confirm('Tem certeza de que deseja excluir sua conta? Esta ação não pode ser desfeita.');">
+        <button class="config-botao-excluir" type="submit">Excluir minha conta</button>
+      </form>
+    <% } %>
+  </section>
+
+  <section class="config-card config-tema-card">
+    <div class="config-card-titulo">
+      <span class="config-icone">☼</span>
+      <div><h2>Aparência</h2><p>Escolha como o P4E será exibido no seu dispositivo.</p></div>
+    </div>
+    <div class="tema-opcoes">
+      <button type="button" class="tema-opcao" data-tema-escolha="escuro"><span class="tema-amostra tema-amostra-escuro">◐</span><span><strong>Modo escuro</strong><small>Ideal para ambientes com pouca luz</small></span><span class="tema-check">✓</span></button>
+      <button type="button" class="tema-opcao" data-tema-escolha="claro"><span class="tema-amostra tema-amostra-claro">☀</span><span><strong>Modo claro</strong><small>Visual mais iluminado</small></span><span class="tema-check">✓</span></button>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Pré-visualização da imagem informada no campo de URL.
+  const campoFoto = document.getElementById('foto');
+  if (campoFoto) {
+    campoFoto.addEventListener('input', () => {
+      const url = campoFoto.value.trim();
+      let preview = document.getElementById('previewFotoPerfil');
+      const iniciais = document.getElementById('previewIniciais');
+      if (!url) {
+        if (preview) preview.remove();
+        if (!document.getElementById('previewIniciais')) {
+          const novo = document.createElement('div');
+          novo.id = 'previewIniciais'; novo.className = 'foto-preview foto-preview-iniciais';
+          novo.textContent = document.getElementById('nome').value.trim().charAt(0).toUpperCase() || 'U';
+          document.querySelector('.perfil-edicao').prepend(novo);
+        }
+        return;
+      }
+      if (!preview) {
+        preview = document.createElement('img');
+        preview.id = 'previewFotoPerfil'; preview.className = 'foto-preview'; preview.alt = 'Prévia da foto de perfil';
+        const atual = document.getElementById('previewIniciais');
+        if (atual) atual.replaceWith(preview); else document.querySelector('.perfil-edicao').prepend(preview);
+      }
+      preview.src = url;
+    });
+  }
+
+  const botoesTema = document.querySelectorAll('[data-tema-escolha]');
+  function atualizarBotoesTema() {
+    const temaAtual = document.documentElement.getAttribute('data-tema') === 'claro' ? 'claro' : 'escuro';
+    botoesTema.forEach(botao => botao.classList.toggle('selecionado', botao.dataset.temaEscolha === temaAtual));
+  }
+  botoesTema.forEach(botao => botao.addEventListener('click', () => {
+    const tema = botao.dataset.temaEscolha;
+    if (tema === 'claro') document.documentElement.setAttribute('data-tema', 'claro');
+    else document.documentElement.removeAttribute('data-tema');
+    localStorage.setItem('p4e-tema', tema);
+    atualizarBotoesTema();
+  }));
+  atualizarBotoesTema();
+</script>
+
+<%- include('../partials/footer') %>
